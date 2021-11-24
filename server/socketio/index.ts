@@ -37,7 +37,6 @@ const socketListeners = (socket: Socket) => {
   })
 
   socket.on("set_todo_done", (id) => {
-    // todos[id].done = !todos[id].done
     todos = todos.map(todo => {
       if (todo.id === id) {
         todo.done = !todo.done
@@ -45,8 +44,7 @@ const socketListeners = (socket: Socket) => {
       return todo
     })
     fs.writeFileSync("todos.json", JSON.stringify(todos))
-    const orderedTodos = orderTodos(ORDER_BY)
-    socket.emit("updated_todos", orderedTodos, ORDER_BY)
+    socket.emit("updated_todos", todos, ORDER_BY)
   })
 
   socket.on("edit_todo", (id, newText) => {
@@ -54,18 +52,20 @@ const socketListeners = (socket: Socket) => {
     todos = todos.map(todo => {
       if (todo.id === id) {
         todo.text = newText
+        todo.time = Date.now() / 1000
       }
       return todo
     })
-    fs.writeFileSync("todos.json", JSON.stringify(todos))
     const orderedTodos = orderTodos(ORDER_BY)
-    socket.emit("updated_todos", orderedTodos, ORDER_BY)
+    todos = orderedTodos
+    fs.writeFileSync("todos.json", JSON.stringify(todos))
+    socket.emit("updated_todos", todos, ORDER_BY)
   })
 
   socket.on("remove_done_todos", () => {
     todos = todos.filter(todo => !todo.done)
-    fs.writeFileSync("todos.json", JSON.stringify(todos))
     const orderedTodos = orderTodos(ORDER_BY)
+    fs.writeFileSync("todos.json", JSON.stringify(orderedTodos))
     socket.emit("updated_todos", orderedTodos, ORDER_BY)
   })
 
@@ -79,14 +79,13 @@ const socketListeners = (socket: Socket) => {
 
 };
 
-
 function orderTodos(orderBy: string) {
   let orderedTodos = todos.sort((a, b) => {
     if (orderBy === "newest") {
       return b.time - a.time
-    } else {
+    } else if (orderBy === "oldest") {
       return a.time - b.time
-    }
+    } else return 0
   })
   return orderedTodos
 
