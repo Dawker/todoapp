@@ -11,6 +11,8 @@ export interface ITodo {
   text: string;
   time: number;
   done: boolean;
+  setSearchTerm?: React.Dispatch<React.SetStateAction<string>>
+  suggested?: boolean;
 }
 
 export interface ITodoItem extends ITodo {

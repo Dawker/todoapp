@@ -17,6 +17,10 @@ const TodoForm: React.FC<ITodoForm> = ({ socket, todos, orderBy }) => {
     setOrderTodos(orderBy)
   }, [orderBy])
 
+  useEffect(() => {
+    if (searchTerm.length === 0) return setSuggestedTodos([])
+  }, [searchTerm])
+
   const searchTodos = (e: React.ChangeEvent<HTMLInputElement>) => {
     const searchInput = e.target.value; // user input
     setSearchTerm(searchInput)
@@ -75,7 +79,9 @@ const TodoForm: React.FC<ITodoForm> = ({ socket, todos, orderBy }) => {
           {suggestedTods.length > 0 && (
             <>
               {suggestedTods.map(({ id, text, done, time }) => (
-                <TodoItem time={time} socket={socket} key={id} text={text} done={done} id={id} />
+                <>
+                  <TodoItem setSearchTerm={setSearchTerm} suggested={true} time={time} socket={socket} key={id} text={text} done={done} id={id} />
+                </>
               ))}
             </>
           )}

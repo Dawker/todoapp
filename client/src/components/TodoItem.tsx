@@ -5,7 +5,7 @@ import { ITodoItem } from "./typescript/interface";
 
 const { Group, Check: CheckBox } = Form
 
-const TodoItem: React.FC<ITodoItem> = ({ done, id, text, socket }) => {
+const TodoItem: React.FC<ITodoItem> = ({ done, id, text, socket, suggested, setSearchTerm }) => {
   const [edit, setEdit] = useState(false);
   const [editValue, setEditValue] = useState(text);
 
@@ -13,6 +13,8 @@ const TodoItem: React.FC<ITodoItem> = ({ done, id, text, socket }) => {
     setEdit((prev) => !prev);
     if (!edit) return;
     socket.emit("edit_todo", id, editValue);
+    // clear searchTerm if the user is editing the todo
+    if (suggested && setSearchTerm) setSearchTerm("")
   }
 
   return (
