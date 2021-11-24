@@ -1,15 +1,12 @@
 import { createServer } from "http";
 import { Server, Socket } from "socket.io";
-import socketLinesers from './socketio'
+import socketListeners from './socketio'
 
 const httpServer = createServer();
 const io = new Server(httpServer);
 
 io.on("connection", (socket: Socket) => {
-  console.log(socket.id + " connected")
-  socketLinesers(socket);
-
-
+  socketListeners(socket);
   socket.on("disconnect", () => {
     console.log(socket.id + " disconnected")
   });

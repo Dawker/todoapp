@@ -1,15 +1,21 @@
 import { Socket } from "socket.io"
 import { v4 as uuidv4 } from 'uuid';
+import fs from 'fs';
 
 import { ITodo } from "typescript/interface";
 
+function getTodos(): any {
+  let todos = JSON.parse(fs.readFileSync('todos.json', 'utf-8'));
+  return todos
+}
 
-let todos: ITodo[] = [];
+let todos: ITodo[] = getTodos();
 let ORDER_BY = "oldest"
 
-const socketLinesers = (socket: Socket) => {
+const socketListeners = (socket: Socket) => {
 
   socket.on("get_todos", () => {
+
     const orderedTodos = orderTodos(ORDER_BY)
     socket.emit("updated_todos", orderedTodos, ORDER_BY)
     socket.emit("order_by", ORDER_BY)
@@ -18,12 +24,14 @@ const socketLinesers = (socket: Socket) => {
   socket.on("add_todo", (text) => {
     if (!text || text.length < 5) return;
     todos = [...todos, { text, done: false, id: uuidv4(), time: Date.now() / 1000 }]
+    fs.writeFileSync("todos.json", JSON.stringify(todos))
     const orderedTodos = orderTodos(ORDER_BY)
     socket.emit("updated_todos", orderedTodos, ORDER_BY)
   })
 
   socket.on("remove_todo", (id) => {
     todos = todos.filter(todo => todo.id !== id)
+    fs.writeFileSync("todos.json", JSON.stringify(todos))
     const orderedTodos = orderTodos(ORDER_BY)
     socket.emit("updated_todos", orderedTodos, ORDER_BY)
   })
@@ -36,6 +44,7 @@ const socketLinesers = (socket: Socket) => {
       }
       return todo
     })
+    fs.writeFileSync("todos.json", JSON.stringify(todos))
     const orderedTodos = orderTodos(ORDER_BY)
     socket.emit("updated_todos", orderedTodos, ORDER_BY)
   })
@@ -48,12 +57,14 @@ const socketLinesers = (socket: Socket) => {
       }
       return todo
     })
+    fs.writeFileSync("todos.json", JSON.stringify(todos))
     const orderedTodos = orderTodos(ORDER_BY)
     socket.emit("updated_todos", orderedTodos, ORDER_BY)
   })
 
   socket.on("remove_done_todos", () => {
     todos = todos.filter(todo => !todo.done)
+    fs.writeFileSync("todos.json", JSON.stringify(todos))
     const orderedTodos = orderTodos(ORDER_BY)
     socket.emit("updated_todos", orderedTodos, ORDER_BY)
   })
@@ -62,6 +73,7 @@ const socketLinesers = (socket: Socket) => {
     ORDER_BY = orderBy
     const orderedTodos = orderTodos(ORDER_BY)
     todos = orderedTodos
+    fs.writeFileSync("todos.json", JSON.stringify(todos))
     socket.emit("updated_todos", orderedTodos, ORDER_BY)
   })
 
@@ -80,4 +92,4 @@ function orderTodos(orderBy: string) {
 
 }
 
-export default socketLinesers;
+export default socketListeners;
